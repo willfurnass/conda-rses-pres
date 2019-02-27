@@ -3,15 +3,13 @@
     <h3>Yet another package manager!</h3>
 </div>
 
-<div class="right">
-    <img src="images/rse-logoonly-stroke.png" width="35%" style="padding: 0 15px; float: right;"/>
-</div>
-
 Will Furnass
 
 Research Software Engineering team, University of Sheffield
 
 2019-02-27
+
+`https://learningpatterns.me/conda-rses-pres`
 
 ---
 ### Overview
