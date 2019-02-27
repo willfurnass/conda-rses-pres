@@ -213,7 +213,11 @@ zlib                      1.2.11               h7b6447c_3    defaults
 ```
 
 ---
-NB includes Python pkgs (e.g. `requests`) and non-Python (inc. compiled) pkgs (e.g. `zlib`)!
+
+NB includes:
+
+ - Python pkgs (e.g. `requests`) and 
+ - non-Python (inc. compiled) pkgs (e.g. `zlib`)!
 
 ---
 ### Creating a new environment
@@ -239,14 +243,7 @@ The following NEW packages will be INSTALLED:
     openssl:         1.1.1b-h7b6447c_0       defaults
     pip:             19.0.3-py37_0           defaults
     python:          3.7.2-h0371630_0        defaults
-    readline:        7.0-h7b6447c_5          defaults
-    setuptools:      40.8.0-py37_0           defaults
-    soupsieve:       1.7.1-py37_0            defaults
-    sqlite:          3.26.0-h7b6447c_0       defaults
-    tk:              8.6.8-hbc83047_0        defaults
-    wheel:           0.33.1-py37_0           defaults
-    xz:              5.2.4-h14c3975_4        defaults
-    zlib:            1.2.11-h7b6447c_3       defaults
+...
 ```
 
 ---
@@ -258,7 +255,7 @@ The following NEW packages will be INSTALLED:
 conda activate room101
 ```
 
-(may need to use `source` instead of `conda` on if using old conda)
+(*may need to use `source` instead of `conda` on if using old conda*)
 
 Your prompt now includes the name of your active environment:
 
@@ -273,7 +270,7 @@ Python 3.7.2
 ---
 ### Installing and removing packages
 
-Install a pkg inc dependencies into the *curently active* environment:
+Install a pkg inc. dependencies into the *curently active* environment:
 
 ```
 conda install PKGNAME
@@ -301,20 +298,24 @@ pip install PKGNAME
 ```
 
 - Recommendation: install conda pkg instead if one exists
+    - conda pkg may include additional non-Python parts
 
 ---
 ### Less Python-centric environments
 
-If conda pkgs don't have to be Py pkgs then 
-we can use conda as a general purpose package manager! E.g.
+- Conda pkgs don't have to be Python pkgs  
+- So we can use conda as a general purpose package manager! E.g.
 
 ```
 (room101) $ conda create --name piratical_fun r-base r-yaml
 ...
+
 (room101) $ conda activate piratical_fun
 ...
+
 (piratical_fun) $ which R
 /home/will/miniconda3/envs/piratical_fun/bin/R
+
 (piratical_fun) $ R
 ...
 R version 3.5.1 (2018-07-02) -- "Feather Spray"
@@ -326,38 +327,64 @@ R version 3.5.1 (2018-07-02) -- "Feather Spray"
 ---
 ### Deactivating and deleting environments
 
-Let's deactivate and delete our R environment:
+Let's deactivate and delete this new conda env:
 
-```console
+```
 (piratical_fun) $ conda deactivate
 $ conda env remove --name piratical_fun
 ```
 
-NB as our environment is entirely contained within a directory we could just delete that instead:
+NB as our conda env definition is contained within a dir we could just delete that instead:
 
-```console
+```
 $ rm -rf /home/will/miniconda3/envs/piratical_fun
 ```
 
 ---
+### *Really* deleting conda packages
+
+- Problem: miniconda dir can get *large* if install e.g. CUDA or Intel MKL packages
+- Warning: **deleting an environment may not delete package files!**
+- Reason: 
+  - conda downloads pkgs into a **pkg cache** dir
+  - then links to those from relevant env dir
+
+  ```
+  $ du -hsBM ~/miniconda3/* | sort -rn | head -n 2
+  832M	/home/will/miniconda3/envs
+  564M	/home/will/miniconda3/pkgs
+  ```
+
+---
+- To remove pkgs from cache that are no longer referenced by an env:
+   
+  ```bash
+  conda clean -pts
+  ```
+
+- Also helpful: tell conda to use env and/or pkg cache dirs somewhere else
+    - `~/.condarc` file or
+    - `CONDA_ENVS_PATH` + `CONDA_PKGS_DIRS` shell environment variables
+
+---
 ### Auditing and reinstantiating environments
 
-What if you want to share your environment with a friend?
+- What if you want to share your environment with a collaborator?
+- Save the env state to a file:
 
-Save the env state to a file:
+  ```
+  $ conda activate room101
+  (room101) $ conda env export > environment.yml
+  ```
 
-```
-$ conda activate room101
-(room101) $ conda env export > environment.yml
-```
+- Then on this machine or elsewhere:
 
-Then here or elsewhere:
+  ```
+  $ conda env create --name room102
+  ```
 
-```
-$ conda env create --name my-room101
-```
-
-These environment files are written in the *YAML* markup language.
+---
+- These `environment.yml` files are written in the *YAML* markup language.
 
 They contain:
 
@@ -365,22 +392,19 @@ They contain:
   - The installed pip packages (name, version) 
   - The used conda *channels* 
 
+---
 > WARNING: the list of packages is not just those explicitly installed.
 > It can include OS-specific dependency packages so (unedited) environment files
 > may not be as portable as you'd hope.
 
-Task: Use `conda env export` to create and inspect an environment file 
-for the `room101` environment.
-
-===
-
+---
 You can also clone environments locally:
 
 ```bash
 $ conda create --name room102 --clone room101
 ```
 
-NB creating/cloning environments is cheap as conda (hard or soft) links to existing package installs in your *package cache* where possible.
+NB creating/cloning environments is cheap as conda links to existing package installs in your pkg cache where possible.
 
 ---
 ### Ok, so what exactly is a package?
@@ -397,17 +421,7 @@ Each conda package is a tarball built from a *recipe*:
 
 Given these, `conda build` can compile/bundle packages and optionally upload them to a repository.
 
----
-### Task
-
-Visit [https://github.com/conda-forge/feedstocks/tree/master/feedstocks](https://github.com/conda-forge/feedstocks/tree/master/feedstocks)
-and compare the build scripts and metadata files of:
-
-  - `joblib`: a small Py package 
-  - `matplotlib`: a large Py package that depends on some non-Py packages 
-  - `make`: a small C program 
-
-NB Not going to cover exactly how to build a package here; see the conda docs for info.
+NB Not going to cover exactly how to build a package here; see the conda and conda-forge docs for info.
 
 ---
 ### What is Conda-Forge?
@@ -426,13 +440,6 @@ NB Not going to cover exactly how to build a package here; see the conda docs fo
     ```bash
     conda install -c conda-forge mynewpkg
     ```
-
----
-### Challenge
-
-Create a conda package for Mu ([https://github.com/mu-editor/mu](https://github.com/mu-editor/mu)), 
-an IDE for the BBC micro:bit.
-
 ---
 ### Summary
 
