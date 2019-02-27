@@ -18,7 +18,7 @@ Research Software Engineering team, University of Sheffield
 
 
 
-# Problem
+### Problem
 
   - Software infrequently exists in a vacuum
 
@@ -34,7 +34,8 @@ Research Software Engineering team, University of Sheffield
 
 
 
-# Assumptions
+---
+### Assumptions
 
 Assumption: you want to work on / use software that has both:
 
@@ -42,13 +43,14 @@ Assumption: you want to work on / use software that has both:
   - Non-Python bits
 
 e.g.
+---
 
   - use a Py pkg that depends on `libxml`;
   - use a Py pkg that depends on linear algebra C lib;
   - Mu, the BBC micro:bit IDE: depends on some Qt libraries for the GUI and serial comms.
 
 ---
-# Requirements
+### Requirements
 
 When working on a Py + non-Py project we want:
 
@@ -58,7 +60,7 @@ When working on a Py + non-Py project we want:
   - For us and other users not to be tied to a given OS/environment. 
 
 ---
-# Install everything as root using OS package manager?
+### Install everything as root using OS package manager?
 
   - Can only have one version of each pkg for all projects (no sandboxing)
   - Limited to older versions of pkgs
@@ -66,18 +68,21 @@ When working on a Py + non-Py project we want:
   - May not be easy/possible to switch to Py3 (e.g. on Centos 7)
 
 ---
-# Install Py stuff as root using pip?
+### Install Py stuff as root using pip?
 
-  - Pro: newer Py pkgs
-  - Con: Now using two pkg managers
-       - Conflicts! 
-       - May break your OS as many \*nix OS utilities written in Py 
-       - How to keep Py and non-Py deps in sync? 
-  - Con: No sandboxing 
-  - Con:- Can only have one version of each package for all projects 
-  - Con:- Slow to install if no wheel available and may need a compiler (urgh) 
+  - Pros:
+      - newer Py pkgs
+  - Cons:
+      - Now using two pkg managers
+           - Conflicts! 
+           - May break your OS as many \*nix OS utilities written in Py 
+           - How to keep Py and non-Py deps in sync? 
+      - No sandboxing 
+      - Can only have one version of each package for all projects 
+      - Slow to install if no wheel available and may need a compiler (urgh) 
 
-# Install Py pkgs in virtualenv?
+---
+### Install Py pkgs in virtualenv?
 
   - Pro: Newer Py pkgs  
   - Pro: Safer as no longer root  
@@ -88,14 +93,14 @@ When working on a Py + non-Py project we want:
   - Con: Slow to install if no wheel available and may need a compiler (urgh) 
 
 ---
-# Docker / Singularity?
+### Docker / Singularity?
 
   - Pro: Py and non-py pkgs contained
   - Con: Still using multiple packages internally if want latest Py pkgs
   - Con: How to track / maintain what is compatible?
 
 ---
-# Another approach: Conda
+### Another approach: Conda
 
 Yet another package manager (groan) *but*:
 
@@ -114,199 +119,243 @@ Yet another package manager (groan) *but*:
   - No reason not to use in Docker!
 
 ---
-# Let's play...
+### Installing (Mini)conda
 
   - Download **Miniconda** 3 installer from [https://repo.continuum.io/miniconda/](https://repo.continuum.io/miniconda/)
-  - Run installer (using e.g. `sh miniconda-latest.sh` on macOS / Linux)
+  - Run installer (using e.g. `bash /Miniconda3-latest-Linux-x86_64.sh ` on macOS / Linux)
   - Install into default location (e.g. `~/miniconda3`) 
-  - Do not prepend the Miniconda install location to your `PATH` 
-  - Windows: do not add Miniconda Python to registry 
+  - Suggestion: do not make Miniconda Python the default Python
+      - **macOS / Linux** don't prepend the install dir to your `PATH` 
+      - **Windows**: don't add Miniconda Python to registry 
 
 ---
-# Make conda available
+### Making conda available
 
-  - **Windows**: Start a Miniconda shell from the *Start* menu. 
-  - **Linux / macOS**: Ensure `conda` can be found on your `$PATH`:
+  - Instead:
+      - **Windows**: Start a Miniconda shell from the *Start* menu. 
+      - **Linux / macOS**: `source` the `conda.sh` script (adds conda dir to your `$PATH`):
 
-```bash
-export PATH="$HOME/miniconda3/bin:$PATH"
 ```
+$ python --version
+Python 3.6.0
 
-You should then be able to run:
+$ source ~/miniconda3/etc/profile.d/conda.sh 
 
-```bash
-[will@laptop ~]$ conda --version
-conda 4.3.13
+$ conda --version
+conda 4.5.12
+$ which python
+/usr/bin/python
+$ python --version
+Python 3.6.0
 ```
 
 ---
-# Where am I? What's going on?
-
-You are now in the *root* conda environment, which has its own Python install:
-
+### Activating the 'base' conda environment
 ```
-[will@laptop ~]$ which python
+$ conda activate base
+
+(base) $ which python
 /home/will/miniconda3/bin/python
-[will@laptop ~]$ python --version
-Python 3.6.0 :: Continuum Analytics, Inc.
+(base) $ python --version
+Python 3.7.1
+
+(base) $ conda deactivate 
+
+$ python --version
+Python 3.6.0
 ```
+
 
 ---
-# Listing packages in a conda env
+### Listing packages in a conda env
 
-Small number of pkgs installed in root env:
+'Small' number of pkgs installed in base env:
 
 ```
-[will@laptop ~]$ conda list
+(base) $ conda list
 # packages in environment at /home/will/miniconda3:
 #
-cffi                      1.9.1                    py36_0  
-conda                     4.3.11                   py36_0  
-conda-env                 2.6.0                         0  
-cryptography              1.7.1                    py36_0  
-idna                      2.2                      py36_0  
-libffi                    3.2.1                         1  
-openssl                   1.0.2k                        0  
-pip                       9.0.1                    py36_1  
-pyasn1                    0.1.9                    py36_0  
-pycosat                   0.6.1                    py36_1  
-pycparser                 2.17                     py36_0  
-pyopenssl                 16.2.0                   py36_0  
-python                    3.6.0                         0  
-readline                  6.2                           2  
-requests                  2.12.4                   py36_0  
-ruamel_yaml               0.11.14                  py36_1  
-setuptools                27.2.0                   py36_0  
-six                       1.10.0                   py36_0  
-sqlite                    3.13.0                        0  
-tk                        8.5.18                        0  
-wheel                     0.29.0                   py36_0  
-xz                        5.2.2                         1  
-yaml                      0.1.6                         0  
-zlib                      1.2.8                         3  
+# Name                    Version                   Build  Channel
+asn1crypto                0.24.0                   py37_0    defaults
+ca-certificates           2018.03.07                    0    defaults
+certifi                   2018.11.29               py37_0    defaults
+cffi                      1.11.5           py37he75722e_1    defaults
+chardet                   3.0.4                    py37_1    defaults
+conda                     4.5.12                   py37_0    defaults
+conda-env                 2.6.0                         1    defaults
+cryptography              2.4.2            py37h1ba5d50_0    defaults
+idna                      2.8                      py37_0    defaults
+libedit                   3.1.20170329         h6b74fdf_2    defaults
+libffi                    3.2.1                hd88cf55_4    defaults
+libgcc-ng                 8.2.0                hdf63c60_1    defaults
+libstdcxx-ng              8.2.0                hdf63c60_1    defaults
+ncurses                   6.1                  he6710b0_1    defaults
+openssl                   1.1.1a               h7b6447c_0    defaults
+pip                       18.1                     py37_0    defaults
+pycosat                   0.6.3            py37h14c3975_0    defaults
+pycparser                 2.19                     py37_0    defaults
+pyopenssl                 18.0.0                   py37_0    defaults
+pysocks                   1.6.8                    py37_0    defaults
+python                    3.7.1                h0371630_7    defaults
+readline                  7.0                  h7b6447c_5    defaults
+requests                  2.21.0                   py37_0    defaults
+ruamel_yaml               0.15.46          py37h14c3975_0    defaults
+setuptools                40.6.3                   py37_0    defaults
+six                       1.12.0                   py37_0    defaults
+sqlite                    3.26.0               h7b6447c_0    defaults
+tk                        8.6.8                hbc83047_0    defaults
+urllib3                   1.24.1                   py37_0    defaults
+wheel                     0.32.3                   py37_0    defaults
+xz                        5.2.4                h14c3975_4    defaults
+yaml                      0.1.7                had09818_2    defaults
+zlib                      1.2.11               h7b6447c_3    defaults
+
 ```
 
-NB `requests` is Python, `zlib` is a compiled shared library!
+---
+NB includes Python pkgs (e.g. `requests`) and non-Python (inc. compiled) pkgs (e.g. `zlib`)!
 
 ---
-# Creating a new environment
+### Creating a new environment
 
-Best to create a new environment (distinct from the root) per project.
+Best to create a new environment (distinct from the 'base') per project.
 Need a name and some pkgs (optionally with version nums and build nums):
 
 ```console
-[will@laptop ~]$ conda create --name room101 python=3.5 beautifulsoup4
-Fetching package metadata ...........
-Solving package specifications: .
-
-Package plan for installation in environment /home/will/miniconda3/envs/room101:
-
+$ conda create --name room101 python=3.7 beautifulsoup4
+...
+  environment location: /home/will/miniconda3/envs/room101
+...
 The following NEW packages will be INSTALLED:
 
-beautifulsoup4: 4.5.3-py35_0 
-openssl:        1.0.2k-1     
-pip:            9.0.1-py35_1 
-python:         3.5.3-1      
-readline:       6.2-2        
-setuptools:     27.2.0-py35_0
-sqlite:         3.13.0-0     
-tk:             8.5.18-0     
-wheel:          0.29.0-py35_0
-xz:             5.2.2-1      
-zlib:           1.2.8-3      
-...
+    beautifulsoup4:  4.7.1-py37_1            defaults
+    ca-certificates: 2019.1.23-0             defaults
+    certifi:         2018.11.29-py37_0       defaults
+    libedit:         3.1.20181209-hc058e9b_0 defaults
+    libffi:          3.2.1-hd88cf55_4        defaults
+    libgcc-ng:       8.2.0-hdf63c60_1        defaults
+    libstdcxx-ng:    8.2.0-hdf63c60_1        defaults
+    ncurses:         6.1-he6710b0_1          defaults
+    openssl:         1.1.1b-h7b6447c_0       defaults
+    pip:             19.0.3-py37_0           defaults
+    python:          3.7.2-h0371630_0        defaults
+    readline:        7.0-h7b6447c_5          defaults
+    setuptools:      40.8.0-py37_0           defaults
+    soupsieve:       1.7.1-py37_0            defaults
+    sqlite:          3.26.0-h7b6447c_0       defaults
+    tk:              8.6.8-hbc83047_0        defaults
+    wheel:           0.33.1-py37_0           defaults
+    xz:              5.2.4-h14c3975_4        defaults
+    zlib:            1.2.11-h7b6447c_3       defaults
 ```
 
 ---
-# *Activate* the environment...
+### *Activate* the environment...
 
 ...to start using it:
 
 ```bash
-source activate room101
+conda activate room101
 ```
 
-(omit '`source`' on Windows)
+(may need to use `source` instead of `conda` on if using old conda)
 
 Your prompt now includes the name of your active environment:
 
 
-```console
-(room101) [will@laptop ~]$ which python
+```
+(room101) $ which python
 /home/will/miniconda3/envs/room101/bin/python
-(room101) [will@laptop ~]$ python --version
-Python 3.5.3 :: Continuum Analytics, Inc.
+(room101) $ python --version
+Python 3.7.2
 ```
 
 ---
-# Installing and removing packages
+### Installing and removing packages
 
-Try: 
+Install a pkg inc dependencies into the *curently active* environment:
 
-  - installing the `numpy` package using `conda install PKGNAME` 
-      - What is the dependency that also gets installed?
-  - removing the `beautifulsoup4` package using `conda remove PKGNAME` 
+```
+conda install PKGNAME
+```
 
-Confirm the effect using `conda list`.
+Or to remove:
 
-We can also install packages using **pip**:
+```
+conda remove PKGNAME
+```
 
-  - Try installing the `mock` testing tool using pip then re-run `conda list`
+Can confirm the effect using `conda list`.
 
 ---
-# Less Py-centric environments
+### Compatability with pip
 
-If conda pkgs don't have to be Py pkgs then we can use conda as a general purpose package manager e.g.
+- pip: default tool for Python package installation
+- pip installs packages from Python Package Index (by default)
+- Many packages only available in PyPI
+- Can install Python pkgs from PyPI into the active conda env!
 
-```console
-(room101) [will@laptop ~]$ conda create --name piratical_fun r-base r-yaml
+```
+conda activate ENVNAME
+pip install PKGNAME
+```
+
+- Recommendation: install conda pkg instead if one exists
+
+---
+### Less Python-centric environments
+
+If conda pkgs don't have to be Py pkgs then 
+we can use conda as a general purpose package manager! E.g.
+
+```
+(room101) $ conda create --name piratical_fun r-base r-yaml
 ...
-(room101) [will@laptop ~]$ source activate piratical_fun
+(room101) $ conda activate piratical_fun
 ...
-(piratical_fun) [will@laptop ~]$ which R
+(piratical_fun) $ which R
 /home/will/miniconda3/envs/piratical_fun/bin/R
-(piratical_fun) [will@laptop ~]$ R
+(piratical_fun) $ R
 ...
-R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
 ...
 > print("Arr!")
 [1] "Arr!"
 ```
 
-# Deactivating and deleting environments
+---
+### Deactivating and deleting environments
 
-> But we're supposed to be talking about Python!
-
-Okay, let's deactivate and delete our R environment:
+Let's deactivate and delete our R environment:
 
 ```console
-(piratical_fun) [will@laptop ~]$ source deactivate
-[will@laptop ~]$ conda env remove --name piratical_fun
+(piratical_fun) $ conda deactivate
+$ conda env remove --name piratical_fun
 ```
 
 NB as our environment is entirely contained within a directory we could just delete that instead:
 
 ```console
-[will@laptop ~]$ rm -rf /home/will/miniconda3/envs/piratical_fun
+$ rm -rf /home/will/miniconda3/envs/piratical_fun
 ```
 
 ---
-# Auditing and reinstantiating environments
+### Auditing and reinstantiating environments
 
 What if you want to share your environment with a friend?
 
 Save the env state to a file:
 
 ```
-[will@laptop ~]$ source activate room101
-(room101) [will@laptop ~]$ conda env export > environment.yml
+$ conda activate room101
+(room101) $ conda env export > environment.yml
 ```
 
 Then here or elsewhere:
 
 ```
-[will@thecloud ~]$ conda env create --name my-room101
-</code></pre>
+$ conda env create --name my-room101
+```
 
 These environment files are written in the *YAML* markup language.
 
@@ -334,7 +383,7 @@ $ conda create --name room102 --clone room101
 NB creating/cloning environments is cheap as conda (hard or soft) links to existing package installs in your *package cache* where possible.
 
 ---
-# Ok, so what exactly is a package?
+### Ok, so what exactly is a package?
 
 Each conda package is a tarball built from a *recipe*:
 
@@ -349,7 +398,7 @@ Each conda package is a tarball built from a *recipe*:
 Given these, `conda build` can compile/bundle packages and optionally upload them to a repository.
 
 ---
-# Task
+### Task
 
 Visit [https://github.com/conda-forge/feedstocks/tree/master/feedstocks](https://github.com/conda-forge/feedstocks/tree/master/feedstocks)
 and compare the build scripts and metadata files of:
@@ -360,7 +409,8 @@ and compare the build scripts and metadata files of:
 
 NB Not going to cover exactly how to build a package here; see the conda docs for info.
 
-# What is Conda-Forge?
+---
+### What is Conda-Forge?
 
   - *Community-driven packaging* for Conda
   - Provides a separate *channel* to the default conda repository
@@ -378,13 +428,13 @@ NB Not going to cover exactly how to build a package here; see the conda docs fo
     ```
 
 ---
-# Challenge
+### Challenge
 
 Create a conda package for Mu ([https://github.com/mu-editor/mu](https://github.com/mu-editor/mu)), 
 an IDE for the BBC micro:bit.
 
 ---
-# Summary
+### Summary
 
   - Conda is a Python-centric but also general-purpose package manager 
   - Can separate projects using environments... 
