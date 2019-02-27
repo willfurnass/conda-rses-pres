@@ -1,7 +1,5 @@
-<div class="center">
-    <img src="images/conda_logo.svg" alt="Conda logo" />
-    <h3>Yet another package manager!</h3>
-</div>
+<img src="images/conda_logo.svg" alt="Conda logo" />
+### Yet another package manager!
 
 Will Furnass
 
@@ -9,7 +7,7 @@ Research Software Engineering team, University of Sheffield
 
 2019-02-27
 
-`https://learningpatterns.me/conda-rses-pres`
+[https://learningpatterns.me/conda-rses-pres](https://learningpatterns.me/conda-rses-pres)
 
 ---
 ### Overview
