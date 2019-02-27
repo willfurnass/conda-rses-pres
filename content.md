@@ -14,109 +14,73 @@ Research Software Engineering team, University of Sheffield
 2019-02-27
 
 ---
+### Overview
 
+ 1. Problem of dependency management for research computing workflows
+ 2. Basics of conda
+ 3. Workflow recommendations
 
-
-
+---
 ### Problem
 
   - Software infrequently exists in a vacuum
-
-
-
-
-
-
-
-
-
-
-
-
+  - Your research workflow has tree of software dependencies e.g.
+      - Python/R packages and/or
+      - Scientific C/C++ libraries and/or
+      - 'Operating system packages' (*often ignored!*)
+  - Dependencies have dependencies have dependencies have...
+  - Behaviour is version-specific
 
 ---
-### Assumptions
+### Requirements for (many) research computing workflows
 
-Assumption: you want to work on / use software that has both:
+**Portability** and **reproducibility** 
 
-  - Python bits
-  - Non-Python bits
+More specifically:
 
-e.g.
----
-
-  - use a Py pkg that depends on `libxml`;
-  - use a Py pkg that depends on linear algebra C lib;
-  - Mu, the BBC micro:bit IDE: depends on some Qt libraries for the GUI and serial comms.
+  - For us and other users not to be tied to a given OS/environment
+  - To work as an unprivileged user
+  - Want to be able to use pkg versions *we want*, regardless of OS pkgs
+  - Separation / independence from OS pkgs to ensure/test portability
+  - Can use different versions of pkg X in different projects
 
 ---
-### Requirements
+### Options
 
-When working on a Py + non-Py project we want:
-
-  - To be able to use Py and non-Py pkgs and pkg versions you want, regardless of OS pkgs; 
-  - Separation / independence from system packages to ensure/test portability; 
-  - To work as an unprivileged user. 
-  - For us and other users not to be tied to a given OS/environment. 
+  - OS package manager: 
+    - Cannot have multiple versions of same pkg
+    - Cannot use on HPC unless sysadmin
+    - Small selection of old pkgs?
 
 ---
-### Install everything as root using OS package manager?
-
-  - Can only have one version of each pkg for all projects (no sandboxing)
-  - Limited to older versions of pkgs
-  - Limited selection of pkgs
-  - May not be easy/possible to switch to Py3 (e.g. on Centos 7)
-
----
-### Install Py stuff as root using pip?
-
-  - Pros:
-      - newer Py pkgs
-  - Cons:
-      - Now using two pkg managers
-           - Conflicts! 
-           - May break your OS as many \*nix OS utilities written in Py 
-           - How to keep Py and non-Py deps in sync? 
-      - No sandboxing 
-      - Can only have one version of each package for all projects 
-      - Slow to install if no wheel available and may need a compiler (urgh) 
+- Python's `virtualenv` tool:
+    - can create isolated set of Python packages as non-sysadmin
+    - but not non-Python packages
+        - inc Python itself!
+    - need to manually keep virtualenv pkgs and OS packages in sync 
+        - yuk!
 
 ---
-### Install Py pkgs in virtualenv?
-
-  - Pro: Newer Py pkgs  
-  - Pro: Safer as no longer root  
-  - Pro: Sandboxing of python pkgs - can have different vers per venv  
-  - Con: Still using two pkg managers (OS for non-Py stuff) 
-      - Pro: No conflicts and won't break your OS *but*
-      - Con: How to keep Py and non-Py deps in sync? 
-  - Con: Slow to install if no wheel available and may need a compiler (urgh) 
+&nbsp;
+  - Conda package manager
+  - Other approaches (inc. Singularity, Docker, spack, EasyBuild, nix)
 
 ---
-### Docker / Singularity?
+### Conda
 
-  - Pro: Py and non-py pkgs contained
-  - Con: Still using multiple packages internally if want latest Py pkgs
-  - Con: How to track / maintain what is compatible?
+Yet another pkg manager (groan) *but*:
 
----
-### Another approach: Conda
-
-Yet another package manager (groan) *but*:
-
-  - A conda pkg can be pure Py (e.g. PyPI pkg with little extra md) 
-  - *or* can be non-Py! 
-  - Provides *environments* (like virtualenvs) 
-      - Keep system and dev pkgs separate (even compiled libraries) 
-      - Can do *everything* as unprivileged user 
+  - A conda pkg does not need to be Python package
+  - Provides package *environments* 
+      - Keep OS and workflow pkgs separate (even compiled libraries) 
+      - Can do *everything* as non-sysadmin
       - Different pkgs and pkg versions per env 
 
 ---
   - Binary-only packages
       - Built for Windows (32b, 64b), macOS, Linux (32b, 64b) and 
-      - for maj+min Py vers (+ maybe key dependency vers)
+      - (optionally) for Py vers (+ maybe key dependency vers)
           - e.g. Binary pkg for Linux 64bit + Py 3.6 + `numpy` 1.12 
-  - No reason not to use in Docker!
 
 ---
 ### Installing (Mini)conda
@@ -124,16 +88,20 @@ Yet another package manager (groan) *but*:
   - Download **Miniconda** 3 installer from [https://repo.continuum.io/miniconda/](https://repo.continuum.io/miniconda/)
   - Run installer (using e.g. `bash /Miniconda3-latest-Linux-x86_64.sh ` on macOS / Linux)
   - Install into default location (e.g. `~/miniconda3`) 
+
+*NB conda on local HPC but is old - best to install into /home or /data dir*
+
+---
+
   - Suggestion: do not make Miniconda Python the default Python
       - **macOS / Linux** don't prepend the install dir to your `PATH` 
       - **Windows**: don't add Miniconda Python to registry 
-
----
-### Making conda available
-
   - Instead:
       - **Windows**: Start a Miniconda shell from the *Start* menu. 
       - **Linux / macOS**: `source` the `conda.sh` script (adds conda dir to your `$PATH`):
+
+---
+### Making conda available
 
 ```
 $ python --version
@@ -216,16 +184,19 @@ zlib                      1.2.11               h7b6447c_3    defaults
 
 NB includes:
 
- - Python pkgs (e.g. `requests`) and 
- - non-Python (inc. compiled) pkgs (e.g. `zlib`)!
+ - Python pkgs e.g. 
+    - `requests`
+ - non-Python (inc. compiled) pkgs e.g.
+    - `zlib`
+    - C++ standard library
 
 ---
 ### Creating a new environment
 
-Best to create a new environment (distinct from the 'base') per project.
-Need a name and some pkgs (optionally with version nums and build nums):
+- (Ideally) create a new env (distinct from `base`) per project.
+- Need a name and some pkgs (optionally with version nums and build nums):
 
-```console
+```
 $ conda create --name room101 python=3.7 beautifulsoup4
 ...
   environment location: /home/will/miniconda3/envs/room101
@@ -270,19 +241,19 @@ Python 3.7.2
 ---
 ### Installing and removing packages
 
-Install a pkg inc. dependencies into the *curently active* environment:
+  - Install a pkg inc. dependencies into the *curently active* environment:
 
-```
-conda install PKGNAME
-```
+    ```
+    conda install PKGNAME
+    ```
 
-Or to remove:
+  - Or to remove:
 
-```
-conda remove PKGNAME
-```
+    ```
+    conda remove PKGNAME
+    ```
 
-Can confirm the effect using `conda list`.
+  - Can confirm the effect using `conda list`.
 
 ---
 ### Compatability with pip
@@ -292,10 +263,13 @@ Can confirm the effect using `conda list`.
 - Many packages only available in PyPI
 - Can install Python pkgs from PyPI into the active conda env!
 
-```
-conda activate ENVNAME
-pip install PKGNAME
-```
+  ```
+  conda activate ENVNAME
+  pip install PKGNAME
+  ```
+
+---
+### Compatability with pip
 
 - Recommendation: install conda pkg instead if one exists
     - conda pkg may include additional non-Python parts
@@ -380,7 +354,7 @@ $ rm -rf /home/will/miniconda3/envs/piratical_fun
 - Then on this machine or elsewhere:
 
   ```
-  $ conda env create --name room102
+  $ conda env create --name room102S --file environment.yml
   ```
 
 ---
@@ -388,9 +362,11 @@ $ rm -rf /home/will/miniconda3/envs/piratical_fun
 
 They contain:
 
-  - The installed conda packages (name, version, build) 
-  - The installed pip packages (name, version) 
-  - The used conda *channels* 
+ 1. The installed conda packages (name, version, build) 
+ 2. The installed pip packages (name, version) 
+ 3. The used conda *channels* 
+
+There are other ways to export env definitions but some don't provide 2 or 3.
 
 ---
 > WARNING: the list of packages is not just those explicitly installed.
@@ -407,39 +383,40 @@ $ conda create --name room102 --clone room101
 NB creating/cloning environments is cheap as conda links to existing package installs in your pkg cache where possible.
 
 ---
-### Ok, so what exactly is a package?
+### Conda channels
 
-Each conda package is a tarball built from a *recipe*:
-
-  - Build scripts for Windows and for macOS / Linux, 
-    which typically contain little more than 
-
-    ```bash
-    $PYTHON setup.py install
-    ```
-  - A `meta.yml` file containing package metadata
-
-Given these, `conda build` can compile/bundle packages and optionally upload them to a repository.
-
-NB Not going to cover exactly how to build a package here; see the conda and conda-forge docs for info.
-
----
-### What is Conda-Forge?
-
-  - *Community-driven packaging* for Conda
-  - Provides a separate *channel* to the default conda repository
-  - Packages built using public Continuous Integration (CI) infrastructure
-  - Propose a new recipe via 
-    the [conda-forge/staged-recipes](https://github.com/conda-forge/staged-recipes)
-
----
-  - If CI confirms that your pull request can build (on multiple OSs) then...
-  - ...a dedicated *feedstock* repo is created for your recipe... 
-  - and post-build your packages will be available from the conda-forge channel using e.g. 
-
+  - Anaconda (the company) provide the `defaults` conda package *channel*
+    - Includes `numpy` built against the Intel MKL
+  - Other important channels:
+    - `conda-forge`: community-driven packaging
+    - Intel Python Distribution (`intel`): optimised builds of `numpy` 
+  - Can explicitly install a pkg from a channel
     ```bash
     conda install -c conda-forge mynewpkg
     ```
+  - Or set default search order
+  - Be wary of risk of conflicts!
+
+---
+### Ok, so what exactly is a package?
+
+- Each conda package is built from a recipe containing
+  - build scripts and 
+  - metadata.
+
+NB Not going to cover exactly how to build a package here; see the conda (and conda-forge) docs for info.
+
+---
+### Workflow suggestions
+
+  - Avoid Anaconda distribution
+  - Avoid using `base` conda env
+  - (Related) separate environment per project
+  - Commit environment definition files to version control
+    - exact definition for benchmarking/testing
+    - 'curated' portable definition (remove OS-specific dependencies)
+  - Use Python 3.x in all new envs if possible
+
 ---
 ### Summary
 
@@ -451,3 +428,10 @@ NB Not going to cover exactly how to build a package here; see the conda and con
   - then share your build recipes and packages with others using conda-forge 
 
 **Thanks for listening!**
+
+---
+### Docker / Singularity?
+
+  - Pro: Py and non-py pkgs contained
+  - Con: Still using multiple packages internally if want latest Py pkgs
+  - Con: How to track / maintain what is compatible?
